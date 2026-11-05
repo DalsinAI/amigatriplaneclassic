@@ -25,6 +25,7 @@
 
 *******************************************************************************/
 
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -32,14 +33,24 @@
 
 constexpr int32_t MAX_ENTRIES = 8192;
 
+/* The file's directory: 32-bit little-endian offset and size, as the DOS
+ * game had them, whatever the size of long and the byte order here. */
 #pragma pack(1)
 struct main_directory_entry {
 
   char nimi[7];
-  unsigned long int offset;
-  unsigned long int koko;
+  uint32_t offset;
+  uint32_t koko;
 };
 #pragma pack()
+
+static uint32_t to_le32(uint32_t v) {
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  return ((v & 0xff) << 24) | ((v & 0xff00) << 8) | ((v >> 8) & 0xff00) | (v >> 24);
+#else
+  return v;
+#endif
+}
 
 struct buildaus_info {
 
@@ -195,8 +206,8 @@ int main(int argc, char **argv) {
     }
 
     koko = filelength(in);
-    dirri[vaihe].koko = koko;
-    dirri[vaihe].offset = offset;
+    dirri[vaihe].koko = to_le32(koko);
+    dirri[vaihe].offset = to_le32(offset);
 
     if (!info[vaihe].nimi[0]) {
       if ((strstr(info[vaihe].tiedosto, ".pgd")) ||

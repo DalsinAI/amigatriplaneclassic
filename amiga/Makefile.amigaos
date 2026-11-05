@@ -1,0 +1,68 @@
+# Triplane Classic for AmigaOS 3.x / AmiCradle, 68040 + FPU, on acsdl12.
+#
+#   make -f amiga/Makefile.amigaos STOVE=/path/to/os32-gcc16/prefix \
+#        NDK=/path/to/gfopensdk/OpenNDK/Include_H \
+#        ACSDL=/path/to/amicradle-guest/gameports/acsdl12
+#
+# STOVE is GFOpenAmigaGCC 16.2.0-open4 or later. ACSDL is acsdl12, built with
+# its own Makefile.amigaos (8-channel MOD music needs it with
+# Mix_LoadMUS_RW). fokker.dks, the game's data, is built from data/ by
+# dksbuild compiled for this machine (HOSTCXX).
+# Output: build/amigaos/Triplane/ with the program and fokker.dks.
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16/prefix
+NDK     ?= $(HOME)/AmiCradle/gfopensdk/OpenNDK/Include_H
+ACSDL   ?= ../amicradle-guest/gameports/acsdl12
+ACGAME  ?= $(ACSDL)/../acgame
+HOSTCXX ?= g++
+CXX     = $(STOVE)/bin/m68k-amigaos-g++
+CC      = $(STOVE)/bin/m68k-amigaos-gcc
+CPU     ?= -m68040 -m68881
+OPT     ?= -O2 -fomit-frame-pointer
+VERSION ?= 1.0.8-vranki
+CXXFLAGS = -noixemul -std=gnu++23 $(OPT) $(CPU) -Wall -Wno-unused-result \
+          -DHAVE_SDL_MIXER -DTRIPLANE_DATA=\"PROGDIR:\" -DTRIPLANE_VERSION=\"$(VERSION)\" \
+          -Isrc -Isrc/tools/dksbuild -I$(ACSDL)/include -I$(ACSDL)/include/SDL \
+          -I$(ACGAME)/include -I$(NDK)
+LDFLAGS = -noixemul $(CPU)
+BUILD   = build/amigaos
+OUT     = $(BUILD)/Triplane
+
+SRC     = src/gfx/bitmap.cpp src/gfx/font.cpp src/gfx/gfx.cpp src/gfx/fades.cpp \
+          src/gfx/extra.cpp src/util/wutil.cpp src/util/random.cpp src/io/joystick.cpp \
+          src/io/sound.cpp src/io/sdl_compat.cpp src/io/video.cpp src/io/mouse.cpp \
+          src/io/dksfile.cpp src/io/timing.cpp src/world/tripai.cpp src/world/tripmis.cpp \
+          src/world/plane.cpp src/world/tripaudio.cpp src/world/terrain.cpp \
+          src/world/fobjects.cpp src/world/tmexept.cpp src/menus/tripmenu.cpp \
+          src/tools/lvledit/lvledit.cpp src/triplane.cpp src/settings.cpp
+OBJS    = $(SRC:%.cpp=$(BUILD)/%.o) $(BUILD)/amiga/stack.o $(BUILD)/amiga/pthread_stubs.o
+
+all: $(OUT)/triplane $(OUT)/fokker.dks
+
+$(OUT)/triplane: $(OBJS) | $(OUT)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(ACSDL)/build/amigaos/libacsdl12.a -lm
+
+$(BUILD)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# libstdc++ asks for POSIX threads; the game has one (amiga/pthread_stubs.c)
+$(BUILD)/amiga/%.o: amiga/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -noixemul -O2 $(CPU) -c -o $@ $<
+
+$(BUILD)/host/dksbuild: src/tools/dksbuild/dksbuild.cc
+	@mkdir -p $(dir $@)
+	$(HOSTCXX) -O2 -w -o $@ $<
+
+$(OUT)/fokker.dks: $(BUILD)/host/dksbuild data/fokker.lst | $(OUT)
+	$(BUILD)/host/dksbuild data/fokker.lst
+	mv fokker.dks $@
+
+$(OUT):
+	mkdir -p $@
+
+clean:
+	rm -rf $(BUILD)
+
+.PHONY: all clean

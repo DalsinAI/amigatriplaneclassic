@@ -1620,10 +1620,18 @@ void main_engine() {
 
   if (findparameter("-playback")) {
     record_file = settings_open("record.dta", "rb");
+    if (record_file == nullptr) {
+      printf("No record.dta to play back\n");
+      exit(1);
+    }
     fread(record_data, 24 * 1280, 16, record_file);
     fclose(record_file);
 
     record_file = settings_open("record.000", "rb");
+    if (record_file == nullptr) {
+      printf("No record.000 to play back\n");
+      exit(1);
+    }
     fread(record_random, 24 * 1280, 4, record_file);
     record_random_swap_endianess();
     fclose(record_file);
@@ -2699,18 +2707,19 @@ void load_up() {
           plane_p[14][l][l2][l3] = plane_p[3][l][l2][l3];
           plane_p[15][l][l2][l3] = plane_p[0][l][l2][l3];
 
-          planes[4][l][l2][l3] = std::move(planes[0][l][l2][l3]);
-          planes[5][l][l2][l3] = std::move(planes[1][l][l2][l3]);
-          planes[6][l][l2][l3] = std::move(planes[2][l][l2][l3]);
-          planes[7][l][l2][l3] = std::move(planes[3][l][l2][l3]);
-          planes[8][l][l2][l3] = std::move(planes[0][l][l2][l3]);
-          planes[9][l][l2][l3] = std::move(planes[1][l][l2][l3]);
-          planes[10][l][l2][l3] = std::move(planes[2][l][l2][l3]);
-          planes[11][l][l2][l3] = std::move(planes[3][l][l2][l3]);
-          planes[12][l][l2][l3] = std::move(planes[1][l][l2][l3]);
-          planes[13][l][l2][l3] = std::move(planes[2][l][l2][l3]);
-          planes[14][l][l2][l3] = std::move(planes[3][l][l2][l3]);
-          planes[15][l][l2][l3] = std::move(planes[0][l][l2][l3]);
+          /* Each of planes 4-15 a copy of its colour's picture: moving
+           * the picture left planes 0-3 (and those moved from them again)
+           * empty, and the players' own planes were drawn from nothing. */
+          static const int colour_of[16] = {0, 1, 2, 3, 0, 1, 2, 3,
+                                            0, 1, 2, 3, 1, 2, 3, 0};
+          for (int pl = 4; pl < 16; pl++) {
+            std::unique_ptr<Bitmap> &from = planes[colour_of[pl]][l][l2][l3];
+            if (from) {
+              int w, h;
+              from->info(&w, &h);
+              planes[pl][l][l2][l3] = std::make_unique<Bitmap>(0, 0, w, h, from);
+            }
+          }
         }
 
   } // debug

@@ -57,6 +57,22 @@ struct configuration config;
 static void find_settings_directory(char *dir) {
   char *home;
 
+#ifdef __amigaos__
+  /* Settings and the roster in the game's own drawer, or in TRIPLANE_HOME
+   * (the testsuite's); an Amiga path takes no "/" after a device */
+  home = getenv("TRIPLANE_HOME");
+  if (home && *home) {
+    size_t n;
+    strncpy(dir, home, FILENAME_MAX - 2);
+    dir[FILENAME_MAX - 2] = 0;
+    n = strlen(dir);
+    if (dir[n - 1] != ':' && dir[n - 1] != '/')
+      strcat(dir, "/");
+  } else
+    strncpy(dir, "PROGDIR:", FILENAME_MAX - 1);
+  return;
+#endif
+
   home = getenv("TRIPLANE_HOME");
   if (home) {
     strncpy(dir, home, FILENAME_MAX - 1);
