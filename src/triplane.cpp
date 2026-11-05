@@ -1620,10 +1620,18 @@ void main_engine() {
 
   if (findparameter("-playback")) {
     record_file = settings_open("record.dta", "rb");
+    if (record_file == nullptr) {
+      printf("No record.dta to play back\n");
+      exit(1);
+    }
     fread(record_data, 24 * 1280, 16, record_file);
     fclose(record_file);
 
     record_file = settings_open("record.000", "rb");
+    if (record_file == nullptr) {
+      printf("No record.000 to play back\n");
+      exit(1);
+    }
     fread(record_random, 24 * 1280, 4, record_file);
     record_random_swap_endianess();
     fclose(record_file);

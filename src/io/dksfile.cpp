@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <SDL/SDL_endian.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -40,11 +41,12 @@
 
 constexpr int32_t MAX_ENTRIES = 8192;
 
+/* 32-bit little-endian offset and size, as dksbuild writes them */
 #pragma pack(1)
 struct main_directory_entry {
   char nimi[7];
-  unsigned long int offset __attribute__((packed));
-  unsigned long int koko __attribute__((packed));
+  uint32_t offset __attribute__((packed));
+  uint32_t koko __attribute__((packed));
 };
 
 #pragma pack()
@@ -84,6 +86,13 @@ int nykyinen_faili;
 static void get_datafile_path(const char *name, char *path) {
   const char *data;
 
+#ifdef __amigaos__
+  /* The data beside the program; an Amiga path takes no "/" after a device */
+  strncpy(path, TRIPLANE_DATA, FILENAME_MAX - 1);
+  strncat(path, name, FILENAME_MAX - 1);
+  return;
+#endif
+
   data = getenv("TRIPLANE_DATA");
   if (data) {
     strncpy(path, data, FILENAME_MAX - 1);
@@ -119,6 +128,10 @@ int dksinit(const char *tiedosto) {
 
   fread(tekstia, sizeof(tekstia), 1, dks_faili);
   fread(dirri, sizeof(main_directory_entry) * MAX_ENTRIES, 1, dks_faili);
+  for (int lask = 0; lask < MAX_ENTRIES; lask++) {
+    dirri[lask].offset = SDL_SwapLE32(dirri[lask].offset);
+    dirri[lask].koko = SDL_SwapLE32(dirri[lask].koko);
+  }
 
   fclose(dks_faili);
 
