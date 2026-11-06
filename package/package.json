@@ -1,0 +1,82 @@
+{
+  "drawer": "Triplane",
+  "drawer_icon": "amiga/icons/drawer.info",
+  "archive": "triplane-{version}-68040",
+  "members": [
+    {
+      "name": "triplane",
+      "build": "triplane",
+      "check": "executable_sha256"
+    },
+    {
+      "name": "Libs/acgame.library",
+      "build": "acgame.library",
+      "check": "acgame_library_sha256"
+    },
+    {
+      "name": "",
+      "tar": "drawer.tar"
+    },
+    {
+      "name": "ReadMe",
+      "repo": "amiga/ReadMe"
+    },
+    {
+      "name": "COPYING",
+      "repo": "COPYING"
+    },
+    {
+      "name": "triplane.info",
+      "repo": "amiga/icons/triplane.info"
+    },
+    {
+      "name": "ReadMe.info",
+      "repo": "amiga/icons/ReadMe.info"
+    },
+    {
+      "name": "COPYING.info",
+      "repo": "amiga/icons/COPYING.info"
+    }
+  ],
+  "aminet": [
+    [
+      "Short",
+      "Triplane Classic, side-scrolling dogfights, 68040+FPU"
+    ],
+    [
+      "Author",
+      "Dodekaedron Software; Triplane Classic team; Amiga port: AmiCradle Team"
+    ],
+    [
+      "Uploader",
+      "AmiCradle Team"
+    ],
+    [
+      "Type",
+      "game/shoot"
+    ],
+    [
+      "Version",
+      "{version}"
+    ],
+    [
+      "Requires",
+      "AmigaOS 3.x, 68040/68060 with FPU, AGA or RTG, AHI"
+    ],
+    [
+      "Architecture",
+      "m68k-amigaos >= 3.0"
+    ]
+  ],
+  "root": [
+    {
+      "name": "Install-Triplane",
+      "repo": "package/installer/Install-Triplane",
+      "installer": true
+    },
+    {
+      "name": "Install-Triplane.info",
+      "repo": "package/installer/Install-Triplane.info"
+    }
+  ]
+}
