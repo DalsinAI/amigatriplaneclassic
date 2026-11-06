@@ -2,18 +2,25 @@
 #
 #   make -f amiga/Makefile.amigaos STOVE=/path/to/os32-gcc16/prefix \
 #        NDK=/path/to/gfopensdk/OpenNDK/Include_H \
-#        ACSDL=/path/to/amicradle-guest/gameports/acsdl12
+#        ACSDL=/path/to/amicradle-guest/gameports/acsdl12 \
+#        ACSDLLIB=/path/to/acsdl12/build ACGAME=/path/to/acgame \
+#        ACGAMELIB=/path/to/acgame/build-amiga
 #
 # STOVE is GFOpenAmigaGCC 16.2.0-open4 or later. ACSDL is acsdl12, built with
 # its own Makefile.amigaos (8-channel MOD music needs it with
 # Mix_LoadMUS_RW). fokker.dks, the game's data, is built from data/ by
 # dksbuild compiled for this machine (HOSTCXX).
+# acsdl12 is built with ACG= into ACSDLLIB, without its own copy of ACGame:
+# the game gets ACGame from acgame.library, through ACGAMELIB's libacgame.a
+# (DalsinAI/acgame's stubs). package/acgame-deps.sh builds both.
 # Output: build/amigaos/Triplane/ with the program and fokker.dks.
 
 STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16/prefix
 NDK     ?= $(HOME)/AmiCradle/gfopensdk/OpenNDK/Include_H
 ACSDL   ?= ../amicradle-guest/gameports/acsdl12
+ACSDLLIB ?= $(ACSDL)/build/amigaos
 ACGAME  ?= $(ACSDL)/../acgame
+ACGAMELIB ?= $(ACGAME)/build-amiga
 HOSTCXX ?= g++
 CXX     = $(STOVE)/bin/m68k-amigaos-g++
 CC      = $(STOVE)/bin/m68k-amigaos-gcc
@@ -40,7 +47,7 @@ OBJS    = $(SRC:%.cpp=$(BUILD)/%.o) $(BUILD)/amiga/stack.o $(BUILD)/amiga/pthrea
 all: $(OUT)/triplane $(OUT)/fokker.dks
 
 $(OUT)/triplane: $(OBJS) | $(OUT)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(ACSDL)/build/amigaos/libacsdl12.a -lm
+	$(CXX) $(LDFLAGS) -o $@ $^ $(ACSDLLIB)/libacsdl12.a $(ACGAMELIB)/libacgame.a -lm
 
 $(BUILD)/%.o: %.cpp
 	@mkdir -p $(dir $@)

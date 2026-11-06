@@ -17,10 +17,16 @@ ACGame and AHI), with its 8-channel MOD music (`Mix_LoadMUS_RW`).
     make -f amiga/Makefile.amigaos -j2 \
         STOVE=/path/to/os32-gcc16/prefix \
         NDK=/path/to/gfopensdk/OpenNDK/Include_H \
-        ACSDL=/path/to/amicradle-guest/gameports/acsdl12
+        ACSDL=/path/to/amicradle-guest/gameports/acsdl12 \
+        ACSDLLIB=/path/to/acsdl12/build \
+        ACGAME=/path/to/acgame ACGAMELIB=/path/to/acgame/build-amiga
 
 STOVE is GFOpenAmigaGCC 16.2.0-open4 or later; acsdl12 is built first with
-its own `Makefile.amigaos` (ACGAME defaults to `$(ACSDL)/../acgame`).
+its own `Makefile.amigaos`, without its own copy of ACGame (`ACG=`): the
+game links acgame.library's stubs (`libacgame.a`).
+`package/build-amiga.sh` (STOVE and OUT set) makes the release archive,
+the drawer below with `Libs/acgame.library` and `Install-Triplane` beside
+it, fetching and building acgame, acsdl12 and zlib at pinned commits.
 Flags: `-noixemul -m68040 -m68881 -O2 -fomit-frame-pointer -std=gnu++23`,
 `-DTRIPLANE_DATA="PROGDIR:"`.
 
@@ -41,6 +47,16 @@ icons are GlowIcons made from the game's own application icon
 with AmiCradle's `port_icons.py`:
 
     python3 AMICRADLE/scripts/port_icons.py amiga/icons/icons.json --out amiga/icons
+
+## Installing
+
+Unpack the archive anywhere (on AmiCradle: `SYS:Utilities/OpenCompress x
+triplane-...lha RAM:`), then double-click `Install-Triplane` beside the
+`Triplane` drawer: it asks where to put the game (`Work:Games` by
+default) and makes or updates the drawer; the settings and pilot roster
+are not in the archive, so an update leaves them as they are. The
+drawer's `Libs` holds the acgame.library the game was built against, and
+the game opens that copy first.
 
 ## Playing
 

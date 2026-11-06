@@ -1,0 +1,13 @@
+{
+  "name": "Triplane Classic",
+  "version": "1.0.8-amiga2",
+  "drawer": "Triplane",
+  "program": "triplane",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 4000000,
+  "modules": [],
+  "keep": [],
+  "parent": "Work:Games",
+  "badge": "../amiga/icons/art/triplane.png"
+}
