@@ -42,8 +42,8 @@ release drawer adds `ReadMe` (`amiga/ReadMe`), `COPYING`, the icons
 `triplane.info`, `ReadMe.info` and `COPYING.info` from `amiga/icons/`, and
 `amiga/icons/drawer.info` as `build/amigaos/Triplane.info` beside the
 drawer. The Makefile has no dist target; copy them in after `make`. The
-icons are GlowIcons made from the game's own application icon
-(`data/application_icon/triplane.xpm`, as `amiga/icons/art/triplane.png`)
+icons are GlowIcons made from our own art
+(`amiga/icons/art/triplaneclassic.svg`)
 with AmiCradle's `port_icons.py`:
 
     python3 AMICRADLE/scripts/port_icons.py amiga/icons/icons.json --out amiga/icons
